@@ -2,7 +2,7 @@ import axios from "axios";
 import { computed, reactive } from "vue";
 
 export interface Role { id: string; name: string; permissions: string[] }
-export interface User { id: string; email: string; name: string; permissions: string[]; roles: Role[] }
+export interface User { id: string; email: string; name: string; permissions: string[]; roles: Role[]; csrfToken: string; isSystemAdmin: boolean }
 const http = axios.create({ baseURL: import.meta.env.VITE_TADIL_API_URL || "", withCredentials: true });
 export const authState = reactive<{ user: User | null; loading: boolean; hydrated: boolean; csrfToken: string | null }>({ user: null, loading: false, hydrated: false, csrfToken: null });
 export const useAuth = () => ({ user: computed(() => authState.user), loading: computed(() => authState.loading), can, logout, login });
