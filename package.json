@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "test:admin-access-ui": "tsx scripts/verify-admin-access-ui.ts",
     "staff:bootstrap": "tsx libs/infra/tadil-database/prisma/bootstrap-staff.ts",
     "test:staff:integration": "node scripts/test-staff-auth.mjs",
     "test:staff": "jest --config apps/tadil-api/jest.auth.config.cjs --runInBand && tsx scripts/verify-endpoint-permissions.ts",

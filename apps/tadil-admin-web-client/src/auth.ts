@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { computed, reactive } from 'vue';
+import i18n from './i18n/i18n';
 
 export interface Role {
   id: string;
@@ -82,7 +83,7 @@ export async function logout() {
     await authHttp.post('/api/auth/logout');
   } catch (error) {
     if (!axios.isAxiosError(error) || error.response?.status !== 401) {
-      window.alert('Unable to sign out. Please try again.');
+      window.alert(i18n.global.t('access.signOutError'));
       return;
     }
   }

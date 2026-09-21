@@ -33,6 +33,29 @@ the resource's read permission and action permission. Additional read capabiliti
 needed by a form are explained there. Staff management is distinct from business
 customer/tailor/courier management.
 
+## Dashboard access management
+
+- **Roles & permissions:** search roles, inspect their access, or create/edit a
+  role in the grouped permission editor. Search by page or action and select a
+  whole group when appropriate. Selecting a role action includes that page's
+  read permission; removing page access also clears its actions. Related-page
+  dependencies remain explicit in the editor and permission matrix.
+- **Staff:** search by name/email, filter active/inactive accounts, and assign
+  roles in the invitation or edit dialog. Advanced controls provide individual
+  grants and denials; denials win. Protected system administrators retain full
+  access and cannot receive denials. Invitations and resets still require secure
+  manual link delivery.
+- **Change password:** the form shows the password requirements and asks for
+  confirmation. A successful update requires signing in again.
+
+The language selector supports the repository's English, Arabic, Hindi, Bengali,
+and Urdu dictionaries. All new access-management and authentication pages have
+complete translations; Arabic and Urdu use right-to-left layouts. Existing
+business-page translations retain English fallback for missing keys.
+
+Run `npm run test:admin-access-ui` to check new translation-key/interpolation
+parity, message compilation, permission labels, and permission selection rules.
+
 ## Deployment configuration
 
 Prefer **same-origin `/api` proxying** so session cookies remain first-party:
