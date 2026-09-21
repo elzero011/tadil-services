@@ -21,6 +21,7 @@ import {
   InformationType,
   UpdateInformationDTO,
 } from './dtos';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
 @Controller('informations')
 @ApiTags('Informations')
@@ -33,6 +34,7 @@ export class InformationsController {
   ) {}
 
   @Get('/')
+  @RequirePermissions('informations.read')
   @ApiOkResponse({ type: DisplayInformationDTO, isArray: true })
   async getInformations(): Promise<DisplayInformationDTO[]> {
     const informations = await this._dataReader.queries.information.findMany({
@@ -57,6 +59,7 @@ export class InformationsController {
   }
 
   @Get('/:id')
+  @RequirePermissions('informations.read')
   @ApiParam({ name: 'id', type: 'string' })
   @ApiOkResponse({ type: DisplayInformationDTO })
   async getInformationById(
@@ -87,6 +90,7 @@ export class InformationsController {
   }
 
   @Post('/create')
+  @RequirePermissions('informations.read', 'informations.create')
   async createInformation(
     @Body() information: CreateInformationDTO
   ): Promise<void> {
@@ -94,6 +98,7 @@ export class InformationsController {
   }
 
   @Put(':id/update')
+  @RequirePermissions('informations.read', 'informations.update')
   @ApiParam({ name: 'id', type: 'string' })
   async updateInformation(
     @Param('id') id: string,
@@ -103,6 +108,7 @@ export class InformationsController {
   }
 
   @Delete('/delete/:id')
+  @RequirePermissions('informations.read', 'informations.delete')
   @ApiParam({ name: 'id', type: 'string' })
   async deleteInformation(@Param('id') id: string): Promise<void> {
     await this._deleteInformationUseCase.execute({ informationId: id });

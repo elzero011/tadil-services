@@ -1,5 +1,5 @@
 <template>
-  <Button variant="outline" size="sm" @click="isOpen = true">
+  <Button v-if="can(user.role === ROLE.TAILOR ? 'tailors.update' : 'couriers.update')" variant="outline" size="sm" @click="isOpen = true">
     <Edit />
   </Button>
   <Modal
@@ -125,6 +125,7 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import AddressFields from "./components/AddressFields.vue";
 import type { AddressFormValue } from "./components/address.types";
+import { can } from "@/auth";
 
 function addressFromUser(user: DisplayUserDTO): AddressFormValue {
   return {
@@ -241,6 +242,7 @@ function validateUserLastName() {
 }
 
 async function updateUser() {
+  if (!can(props.user.role === ROLE.TAILOR ? "tailors.update" : "couriers.update")) return;
   try {
     if (
       validateUserPhone() &&

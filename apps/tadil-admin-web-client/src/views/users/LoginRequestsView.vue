@@ -35,10 +35,10 @@
               <td class="px-6 py-4">{{ user.phone }}</td>
               <td class="px-6 py-4 capitalize">{{ user.role }}</td>
               <td class="px-6 py-4 text-right space-x-2">
-                <Button variant="outline" size="sm" @click="handleApprove(user.id)" :disabled="isProcessing === user.id">
+                <Button v-if="can('login_requests.approve')" variant="outline" size="sm" @click="handleApprove(user.id)" :disabled="isProcessing === user.id">
                   {{ $t("loginRequests.buttons.approve") }}
                 </Button>
-                <Button variant="destructive" size="sm" @click="handleReject(user.id)" :disabled="isProcessing === user.id">
+                <Button v-if="can('login_requests.reject')" variant="destructive" size="sm" @click="handleReject(user.id)" :disabled="isProcessing === user.id">
                   {{ $t("loginRequests.buttons.reject") }}
                 </Button>
               </td>
@@ -56,12 +56,14 @@ import { apiClient } from "@/integration";
 import type { DisplayUserDTO } from "@/integration/DTOs";
 import Button from "@/components/ui/Button.vue";
 import { Loader2 } from "lucide-vue-next";
+import { can } from "@/auth";
 
 const requests = ref<DisplayUserDTO[]>([]);
 const isLoading = ref(true);
 const isProcessing = ref<string | null>(null);
 
 const fetchRequests = async () => {
+  if (!can("login_requests.read")) return;
   isLoading.value = true;
   try {
     const response = await apiClient.loginRequestsControllerGetPending();
@@ -74,6 +76,7 @@ const fetchRequests = async () => {
 };
 
 const handleApprove = async (id: string) => {
+  if (!can("login_requests.approve")) return;
   isProcessing.value = id;
   try {
     await apiClient.loginRequestsControllerApprove(id);
@@ -86,6 +89,7 @@ const handleApprove = async (id: string) => {
 };
 
 const handleReject = async (id: string) => {
+  if (!can("login_requests.reject")) return;
   isProcessing.value = id;
   try {
     await apiClient.loginRequestsControllerReject(id);

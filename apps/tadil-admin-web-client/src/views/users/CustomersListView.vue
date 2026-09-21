@@ -36,6 +36,7 @@ import { Search } from "lucide-vue-next";
 import { apiClient, type DisplayUserDTO } from "@/integration";
 import { Pagination } from "@/components";
 import CustomersTable from "./components/CustomersTable.vue";
+import { can } from "@/auth";
 
 const customers = ref<DisplayUserDTO[]>([]);
 const isLoading = ref(false);
@@ -49,6 +50,7 @@ const sortingMax = ref(0);
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const fetchCustomers = async () => {
+  if (!can("customers.read")) return;
   isLoading.value = true;
   try {
     const res = await apiClient.customersControllerGetCustomers({

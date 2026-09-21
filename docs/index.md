@@ -20,5 +20,5 @@ Welcome to the documentation for the Tadil platform. This `docs` folder contains
 
 ## Guides & Architecture
 
-- [Admin Authentication & RBAC (Keycloak)](./keycloak-admin-auth.md)
-- [Custom Keycloak Login Theme](./keycloak-login-theme.md)
+- [Staff authentication and Keycloak migration](./staff-authentication.md)
+- [Staff permission matrix](./staff-permissions.md)

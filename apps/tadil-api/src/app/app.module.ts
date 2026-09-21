@@ -9,13 +9,15 @@ import { OrdersModule } from './orders/orders.module';
 import { LocationsModule } from './locations/locations.module';
 import { AppController } from './app.controller';
 import { CommonModule } from './common/common.module';
-import { KeycloakAuthGuard } from './auth/guards/keycloak.guard';
-import { RolesGuard } from './auth/guards/roles.guard';
+import { AuthModule } from './auth/auth.module';
+import { SessionGuard } from './auth/guards/session.guard';
+import { PermissionsGuard } from './auth/guards/permissions.guard';
 import { CatalogSortingController } from './catalog-sorting.controller';
 
 @Module({
   imports: [
     CommonModule,
+    AuthModule,
     ModelsModule,
     InformationsModule,
     AlterationsModule,
@@ -26,14 +28,8 @@ import { CatalogSortingController } from './catalog-sorting.controller';
   ],
   controllers: [AppController, CatalogSortingController],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: KeycloakAuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
+    { provide: APP_GUARD, useClass: SessionGuard },
+    { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
 })
 export class AppModule {}

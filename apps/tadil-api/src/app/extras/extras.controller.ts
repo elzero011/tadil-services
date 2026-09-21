@@ -16,6 +16,7 @@ import {
   DeleteExtraUseCase,
 } from '@tadil-extras';
 import { CreateExtraDTO, DisplayExtraDTO, UpdateExtraDTO } from './dtos';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
 @Controller('extras')
 @ApiTags('Extras')
@@ -28,6 +29,7 @@ export class ExtrasController {
   ) {}
 
   @Get('/')
+  @RequirePermissions('extras.read')
   @ApiOkResponse({ type: DisplayExtraDTO, isArray: true })
   async getExtras(): Promise<DisplayExtraDTO[]> {
     const extras = await this._dataReader.queries.extra.findMany({
@@ -37,6 +39,7 @@ export class ExtrasController {
   }
 
   @Get('/:id')
+  @RequirePermissions('extras.read')
   @ApiParam({ name: 'id', type: 'string' })
   @ApiOkResponse({ type: DisplayExtraDTO })
   async getExtraById(@Param('id') id: string): Promise<DisplayExtraDTO> {
@@ -51,11 +54,13 @@ export class ExtrasController {
   }
 
   @Post('/create')
+  @RequirePermissions('extras.read', 'extras.create')
   async createExtra(@Body() extra: CreateExtraDTO): Promise<void> {
     await this._createExtraUseCase.execute(extra);
   }
 
   @Put('/update/:id')
+  @RequirePermissions('extras.read', 'extras.update')
   @ApiParam({ name: 'id', type: 'string' })
   async updateExtra(
     @Param('id') id: string,
@@ -65,6 +70,7 @@ export class ExtrasController {
   }
 
   @Delete('/delete/:id')
+  @RequirePermissions('extras.read', 'extras.delete')
   @ApiParam({ name: 'id', type: 'string' })
   async deleteExtra(@Param('id') id: string): Promise<void> {
     await this._deleteExtraUseCase.execute({ extraId: id });

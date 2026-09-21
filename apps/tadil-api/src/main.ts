@@ -13,8 +13,30 @@ import * as path from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use((request: any, response: any, next: () => void) => {
+    response.setHeader('Cache-Control', 'no-store');
+    const cookies: Record<string, string> = {};
+    for (const part of String(request.headers.cookie ?? '').split(';')) {
+      const separator = part.indexOf('=');
+      if (separator > 0) {
+        const key = part.slice(0, separator).trim();
+        try {
+          cookies[key] = decodeURIComponent(part.slice(separator + 1).trim());
+        } catch {
+          response.status(400).json({ message: 'Malformed cookie' });
+          return;
+        }
+      }
+    }
+    request.cookies = cookies;
+    next();
+  });
   app.enableCors({
-    origin: '*', // or your frontend domain
+    origin: (process.env.STAFF_ALLOWED_ORIGINS ?? '')
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean),
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
   const globalPrefix = 'api';
@@ -35,7 +57,9 @@ async function bootstrap() {
     path.join(__dirname, 'assets/swagger-dark.css'),
     { encoding: 'utf8' }
   );
-  SwaggerModule.setup('api', app, document, { customCss });
+  if (process.env.NODE_ENV !== 'production') {
+    SwaggerModule.setup('api', app, document, { customCss });
+  }
 
   await app.listen(port, '0.0.0.0');
   Logger.log(

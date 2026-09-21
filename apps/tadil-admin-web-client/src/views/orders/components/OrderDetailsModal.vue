@@ -314,6 +314,7 @@ import { ref, watch } from "vue";
 import { Modal } from "@/components";
 import { Loader2, User, Scissors, Truck, Mic, Calendar } from "lucide-vue-next";
 import { apiClient, type DisplayOrderDetailsDto } from "@/integration";
+import { can } from "@/auth";
 import { useLocalizedCityComposable } from "@/composables";
 
 const { cityLabel } = useLocalizedCityComposable();
@@ -328,6 +329,7 @@ const isLoadingDetails = ref(false);
 const selectedOrderDetails = ref<DisplayOrderDetailsDto | null>(null);
 
 const fetchOrderDetails = async () => {
+  if (!can("orders.read")) return;
   if (!props.orderId) return;
   isLoadingDetails.value = true;
   selectedOrderDetails.value = null;

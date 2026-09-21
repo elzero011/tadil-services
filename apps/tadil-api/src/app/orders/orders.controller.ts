@@ -2,11 +2,11 @@ import { Controller, Get, Post, Param, Body, Query, NotFoundException } from '@n
 import { ApiOkResponse, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { DataReader } from '@tadil-database';
 import { AssignTailorManuallyUseCase } from '@tadil-orders';
-import { DisplayOrderDto } from './dtos/displayOrder.dto';
 import { PaginatedOrdersDto } from './dtos/paginatedOrders.dto';
 import { DisplayOrderDetailsDto, DisplayExtraSnapshotDTO } from './dtos/displayOrderDetails.dto';
 import { environment } from '../../environments/environment';
-import { ChatMessage } from 'tadil-chat';
+import { ChatMessage } from '@tadil-chat';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
 @Controller('orders')
 @ApiTags('Orders')
@@ -17,6 +17,7 @@ export class OrdersController {
   ) {}
 
   @Get('/')
+  @RequirePermissions('orders.read')
   @ApiOperation({ summary: 'Get all orders with optional filtering' })
   @ApiOkResponse({ type: PaginatedOrdersDto })
   @ApiQuery({ name: 'status', required: false })
@@ -117,6 +118,7 @@ export class OrdersController {
   }
 
   @Get('/:id')
+  @RequirePermissions('orders.read')
   @ApiOperation({ summary: 'Get detailed order by id' })
   @ApiOkResponse({ type: DisplayOrderDetailsDto })
   async getOrderById(@Param('id') id: string): Promise<DisplayOrderDetailsDto> {
@@ -269,6 +271,7 @@ export class OrdersController {
   }
 
   @Post('/:id/assign-tailor')
+  @RequirePermissions('orders.read', 'orders.assign_tailor')
   @ApiOperation({ summary: 'Manually assign a tailor to an order' })
   async assignTailor(
     @Param('id') id: string,

@@ -51,5 +51,6 @@ test-output
 
 graphify-out
 mobile-api.log
+.hoplite/bin/
 CLAUDE.md
 .claude/

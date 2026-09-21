@@ -1,5 +1,5 @@
 <template>
-  <Button variant="outline" size="sm" @click="openModal">
+  <Button v-if="can('informations.update')" variant="outline" size="sm" @click="openModal">
     <Edit />
   </Button>
   <Modal v-model="isOpen" @close-modal="closeModal">
@@ -123,6 +123,7 @@ import {
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { Edit } from "lucide-vue-next";
+import { can } from "@/auth";
 import {
   apiClient,
   InformationType,

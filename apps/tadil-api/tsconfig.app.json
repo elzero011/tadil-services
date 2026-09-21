@@ -14,7 +14,8 @@
     "dist",
     "eslint.config.js",
     "eslint.config.cjs",
-    "eslint.config.mjs"
+    "eslint.config.mjs",
+    "**/*.spec.ts"
   ],
   "references": [
     {

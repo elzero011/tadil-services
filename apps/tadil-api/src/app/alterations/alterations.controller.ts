@@ -20,6 +20,7 @@ import {
   DisplayAlterationDTO,
   UpdateAlterationDTO,
 } from './dtos';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
 @Controller('alterations')
 @ApiTags('Alterations')
@@ -32,6 +33,7 @@ export class AlterationsController {
   ) {}
 
   @Get('/')
+  @RequirePermissions('alterations.read')
   @ApiOkResponse({ type: DisplayAlterationDTO, isArray: true })
   async getAlterations(): Promise<DisplayAlterationDTO[]> {
     const alterations = await this._dataReader.queries.alteration.findMany({
@@ -51,6 +53,7 @@ export class AlterationsController {
   }
 
   @Get('/:id')
+  @RequirePermissions('alterations.read')
   @ApiParam({ name: 'id', type: 'string' })
   @ApiOkResponse({ type: DisplayAlterationDTO })
   async getAlterationById(
@@ -76,6 +79,7 @@ export class AlterationsController {
   }
 
   @Post('/create')
+  @RequirePermissions('alterations.read', 'alterations.create')
   async createAlteration(
     @Body() alteration: CreateAlterationDTO
   ): Promise<void> {
@@ -83,6 +87,7 @@ export class AlterationsController {
   }
 
   @Put('/update/:id')
+  @RequirePermissions('alterations.read', 'alterations.update')
   @ApiParam({ name: 'id', type: 'string' })
   async updateAlteration(
     @Param('id') id: string,
@@ -92,6 +97,7 @@ export class AlterationsController {
   }
 
   @Delete('/delete/:id')
+  @RequirePermissions('alterations.read', 'alterations.delete')
   @ApiParam({ name: 'id', type: 'string' })
   async deleteAlteration(@Param('id') id: string): Promise<void> {
     await this._deleteAlterationUseCase.execute({ alterationId: id });

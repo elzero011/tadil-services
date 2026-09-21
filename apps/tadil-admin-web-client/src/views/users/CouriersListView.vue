@@ -42,6 +42,7 @@ import { apiClient, ROLE, type DisplayUserDTO } from "@/integration";
 import { Pagination } from "@/components";
 import AddUserModal from "./AddUserModal.vue";
 import UsersTable from "./components/UsersTable.vue";
+import { can } from "@/auth";
 
 const couriers = ref<DisplayUserDTO[]>([]);
 const isLoading = ref<boolean>(false);
@@ -55,6 +56,8 @@ const sortingMax = ref(0);
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const fetchCouriers = async () => {
+  if (!can("couriers.read")) return;
+  if (!can("couriers.read")) return;
   isLoading.value = true;
   try {
     const response = await apiClient.couriersControllerGetCouriers({

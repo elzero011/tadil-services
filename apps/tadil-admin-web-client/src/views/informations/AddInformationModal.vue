@@ -1,5 +1,5 @@
 <template>
-  <Button @click="isOpen = true">
+  <Button v-if="can('informations.create')" @click="isOpen = true">
     {{ $t("informations.addNewInformationModal.title") }}
   </Button>
   <Modal v-model="isOpen" @close-modal="closeModal">
@@ -118,6 +118,7 @@ import {
 } from "@/components";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { can } from "@/auth";
 import {
   apiClient,
   InformationType,

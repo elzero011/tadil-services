@@ -56,7 +56,7 @@
       </div>
     </div>
     <div class="flex justify-end gap-4">
-      <Button
+      <Button v-if="can('models.update')"
         variant="outline"
         @click="resetLocalModel"
         :disabled="!editsNotSaved"
@@ -72,7 +72,7 @@
         @confirmed="() => deleteModel()"
       >
         <template #trigger="{ openAlert }">
-          <Button variant="destructive" class="w-full" @click="openAlert">
+          <Button v-if="can('models.delete')" variant="destructive" class="w-full" @click="openAlert">
             <Trash2 class="h-4 w-4" />
             <p>{{ $t("models.deleteModel.deleteButton") }}</p>
           </Button>
@@ -99,6 +99,7 @@ import {
 } from "@/integration";
 import { useI18n } from "vue-i18n";
 import { Save, Trash2 } from "lucide-vue-next";
+import { can } from "@/auth";
 
 const { t } = useI18n();
 const { openToast } = useToast();
@@ -152,6 +153,7 @@ const editsNotSaved = computed(() => {
 });
 
 async function updateModel() {
+  if (!can("models.update")) return;
   try {
     if (validateCategory())
       await apiClient.modelsControllerUpdateModel(
@@ -171,6 +173,7 @@ async function updateModel() {
 }
 
 async function deleteModel() {
+  if (!can("models.delete")) return;
   try {
     await apiClient.modelsControllerDeleteModel(props.model.id);
     openToast(t("models.deleteModel.success"));

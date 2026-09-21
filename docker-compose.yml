@@ -12,45 +12,8 @@ services:
     volumes:
       - tadil_postgres_volume:/var/lib/postgresql
 
-  keycloak-db:
-    image: postgres:latest
-    container_name: tadil-keycloak-db
-    restart: unless-stopped
-    ports:
-      - 5433:5432
-    environment:
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: KeycloakPassword!
-      POSTGRES_DB: keycloak
-    volumes:
-      - tadil_keycloak_db_volume:/var/lib/postgresql
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    container_name: tadil-keycloak
-    restart: unless-stopped
-    environment:
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://tadil-keycloak-db:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: KeycloakPassword!
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      # Disable theme caching so custom theme edits show up on refresh (dev only).
-      KC_SPI_THEME_CACHE_THEMES: "false"
-      KC_SPI_THEME_CACHE_TEMPLATES: "false"
-      KC_SPI_THEME_STATIC_MAX_AGE: "-1"
-    command: start-dev
-    ports:
-      - 8080:8080
-    volumes:
-      # Custom "tadil" login theme (select it in Realm settings > Themes > Login theme).
-      - ./keycloak-themes/tadil:/opt/keycloak/themes/tadil
-    depends_on:
-      - keycloak-db
-
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: tadil-minio
     restart: unless-stopped
     command: minio server --console-address ":9001" /data
@@ -65,5 +28,4 @@ services:
 
 volumes:
   tadil_postgres_volume:
-  tadil_keycloak_db_volume:
   tadil_minio_volume:

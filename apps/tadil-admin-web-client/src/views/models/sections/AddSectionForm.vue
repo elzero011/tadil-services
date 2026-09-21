@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Button
+    <Button v-if="can('models.update') && can('alterations.read')"
       variant="outline"
       class="w-full"
       @click="startCreatingNewSection"
@@ -9,7 +9,7 @@
       {{ $t("models.sections.createSection.addNewSection") }}
     </Button>
     <Modal v-model="isCreatingNewSection" @close-modal="resetNewSection">
-      <SectionEditor
+      <SectionEditor v-if="isCreatingNewSection"
         v-model="newSection"
         :imageBase64String="imageBase64String"
         :drawingState="drawingState"
@@ -28,6 +28,7 @@ import { type AddSectionDTO, apiClient } from "@/integration";
 import { ref, watch } from "vue";
 import { useCanvasDrawing } from "./useCanvasDrawing.composable";
 import { useI18n } from "vue-i18n";
+import { can } from "@/auth";
 import SectionEditor from "./SectionEditor.vue";
 
 const { t } = useI18n();
@@ -86,6 +87,7 @@ function startCreatingNewSection() {
 }
 
 async function addSection() {
+  if (!can("models.update")) return;
   try {
     await apiClient.modelsControllerAddSection(
       props.modelImageId,

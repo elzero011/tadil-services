@@ -33,7 +33,7 @@
               <div
                 v-for="(section, index) of selectedModelImage.sections"
                 :key="section.id"
-                draggable="true"
+                :draggable="can('models.update')"
                 @dragstart="onSectionDragStart(index)"
                 @dragover.prevent
                 @drop="onSectionDrop(index)"
@@ -53,7 +53,7 @@
             @confirmed="deleteModelImage"
           >
             <template #trigger="{ openAlert }">
-              <Button variant="destructive" class="w-full" @click="openAlert">
+              <Button v-if="can('models.update')" variant="destructive" class="w-full" @click="openAlert">
                 <Trash2 class="h-6 w-6" />
                 {{ $t("models.images.deleteImage.deleteButton") }}
               </Button>
@@ -96,7 +96,7 @@
             />
           </button>
         </div>
-        <AddModelImageButton
+        <AddModelImageButton v-if="can('models.update')"
           :modelId="model.id"
           @updated:model-images="getModelImages(), emit('updated:model-images')"
         />
@@ -125,6 +125,7 @@ import {
 import AddModelImageButton from "./AddModelImageButton.vue";
 import { useI18n } from "vue-i18n";
 import EditModelNamesForm from "./EditModelNamesForm.vue";
+import { can } from "@/auth";
 import { useCanvasDrawing } from "./sections/useCanvasDrawing.composable";
 
 const { t } = useI18n();
@@ -149,6 +150,7 @@ const modelImageSections = computed(() =>
 
 const isLoadingImages = ref<boolean>(false);
 async function getModelImages() {
+  if (!can("models.read")) return;
   try {
     isLoadingImages.value = true;
     modelImages.value = [];
@@ -175,6 +177,7 @@ async function getModelImages() {
 }
 
 async function deleteModelImage() {
+  if (!can("models.update")) return;
   try {
     await apiClient.modelsControllerDeleteModelImage(
       selectedModelImage.value!.id
@@ -199,6 +202,7 @@ function onSectionDragStart(index: number) {
 }
 
 async function onSectionDrop(targetIndex: number) {
+  if (!can("models.update")) return;
   const image = selectedModelImage.value;
   if (!image || draggedSectionIndex.value === null) return;
   const from = draggedSectionIndex.value;

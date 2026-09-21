@@ -2,7 +2,7 @@
   <div>
     <h1 class="text-2xl font-bold">{{ $t("nav.alterations") }}</h1>
     <div class="flex justify-end">
-      <AddAlterationModal
+      <AddAlterationModal v-if="can('alterations.create') && can('models.read') && can('informations.read')"
         :sectionsOptions="sectionsOptions"
         :informationsOptions="informationsOptions"
         @created:alteration="getAlterations"
@@ -100,19 +100,19 @@
             </td>
             <td class="">
               <div class="flex gap-2 justify-center">
-                <SortingButton
+                <SortingButton v-if="can('alterations.update')"
                   :sorting="alteration.sorting"
                   :max="alterations.length"
                   :save="(sorting) => updateSorting(alteration, sorting)"
                 />
-                <EditAlterationModal
+                <EditAlterationModal v-if="can('alterations.update') && can('models.read') && can('informations.read')"
                   :key="alteration.id"
                   :alteration="alteration"
                   :sectionsOptions="sectionsOptions"
                   :informationsOptions="informationsOptions"
                   @updated:alteration="getAlterations"
                 />
-                <DestructiveActionAlert
+                <DestructiveActionAlert v-if="can('alterations.delete')"
                   :title="$t('alterations.deleteAlteration.confirmMessage')"
                   :onConfirm="() => deleteAlteration(alteration.id)"
                 >
@@ -142,6 +142,7 @@ import {
 } from "@/components";
 import { Trash2 } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
+import { can } from "@/auth";
 import AddAlterationModal from "./AddAlterationModal.vue";
 import EditAlterationModal from "./EditAlterationModal.vue";
 import {
@@ -158,6 +159,7 @@ const alterations = ref<DisplayAlterationDTO[]>([]);
 const isLoading = ref<boolean>(false);
 
 async function getAlterations() {
+  if (!can("alterations.read")) return;
   isLoading.value = true;
   alterations.value = (
     await apiClient.alterationsControllerGetAlterations()
@@ -169,6 +171,7 @@ async function updateSorting(
   alteration: DisplayAlterationDTO,
   sorting: number
 ) {
+  if (!can("alterations.update")) return;
   await apiClient.catalogSortingControllerUpdateSorting(
     "alterations",
     alteration.id,
@@ -178,6 +181,7 @@ async function updateSorting(
 }
 
 async function deleteAlteration(alterationId: string) {
+  if (!can("alterations.delete")) return;
   try {
     await apiClient.alterationsControllerDeleteAlteration(alterationId);
     openToast(t("alterations.deleteAlteration.success"));
@@ -255,12 +259,12 @@ const informationsOptions = computed(() => {
 });
 
 onBeforeMount(async () => {
-  await Promise.all([
-    await getAlterations(),
-    (sections.value = (await apiClient.modelsControllerGetSections()).data),
-    (informations.value = (
-      await apiClient.informationsControllerGetInformations()
-    ).data),
-  ]);
+  await getAlterations();
+  if (can("alterations.create") || can("alterations.update")) {
+    if (can("models.read"))
+      sections.value = (await apiClient.modelsControllerGetSections()).data;
+    if (can("informations.read"))
+      informations.value = (await apiClient.informationsControllerGetInformations()).data;
+  }
 });
 </script>

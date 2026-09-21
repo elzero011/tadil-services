@@ -1,5 +1,5 @@
 <template>
-  <Button @click="isOpen = true">
+  <Button v-if="can(selectedUserType === ROLE.TAILOR ? 'tailors.create' : 'couriers.create')" @click="isOpen = true">
     {{ $t(`users.addNewUserModal.title`) }}
   </Button>
   <Modal
@@ -124,6 +124,7 @@ import { useI18n } from "vue-i18n";
 import { Scissors, Truck, UserPlus } from "lucide-vue-next";
 import AddressFields from "./components/AddressFields.vue";
 import type { AddressFormValue } from "./components/address.types";
+import { can } from "@/auth";
 
 const { t } = useI18n();
 const { openToast } = useToast();
@@ -214,6 +215,7 @@ function validateUserLastName() {
 }
 
 async function createUser() {
+  if (!can(props.selectedUserType === ROLE.TAILOR ? "tailors.create" : "couriers.create")) return;
   try {
     if (
       validateUserPhone() &&

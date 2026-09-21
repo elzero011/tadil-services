@@ -96,6 +96,7 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { Modal } from "@/components";
+import { can } from "@/auth";
 import { apiClient } from "@/integration";
 import { Loader2 } from "lucide-vue-next";
 
@@ -131,6 +132,7 @@ const isLoading = ref(false);
 const error = ref(false);
 
 async function fetchWallet(userId: string) {
+  if (!can("payouts.read")) return;
   isLoading.value = true;
   error.value = false;
   details.value = null;

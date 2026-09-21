@@ -18,6 +18,9 @@
       :tailor-loading="lookupLoading.tailor"
       :courier-loading="lookupLoading.courier"
       :customer-loading="lookupLoading.customer"
+      :show-tailor-filter="can('tailors.read')"
+      :show-courier-filter="can('couriers.read')"
+      :show-customer-filter="can('customers.read')"
       @search:tailor="searchTailors"
       @search:courier="searchCouriers"
       @search:customer="searchCustomers"
@@ -53,6 +56,7 @@ import { useLocalizedCityComposable } from "@/composables";
 import OrdersFilters, { type OrdersFilterState } from "./components/OrdersFilters.vue";
 import OrdersTable from "./components/OrdersTable.vue";
 import { Pagination } from "@/components";
+import { can } from "@/auth";
 
 const { t } = useI18n();
 const { cityLabel } = useLocalizedCityComposable();
@@ -108,6 +112,7 @@ const availableTailors = computed(() =>
 );
 
 const searchTailors = async (search: string) => {
+  if (!can("tailors.read")) return;
   lookupLoading.tailor = true;
   try {
     const res = await apiClient.tailorsControllerGetTailors({ search, pageSize: LOOKUP_LIMIT });
@@ -120,6 +125,7 @@ const searchTailors = async (search: string) => {
 };
 
 const searchCouriers = async (search: string) => {
+  if (!can("couriers.read")) return;
   lookupLoading.courier = true;
   try {
     const res = await apiClient.couriersControllerGetCouriers({ search, pageSize: LOOKUP_LIMIT });
@@ -132,6 +138,7 @@ const searchCouriers = async (search: string) => {
 };
 
 const searchCustomers = async (search: string) => {
+  if (!can("customers.read")) return;
   lookupLoading.customer = true;
   try {
     const res = await apiClient.customersControllerGetCustomers({ search, pageSize: LOOKUP_LIMIT });
@@ -144,6 +151,7 @@ const searchCustomers = async (search: string) => {
 };
 
 const fetchOrders = async () => {
+  if (!can("orders.read")) return;
   isLoading.value = true;
   try {
     const query: Record<string, any> = { page: page.value, pageSize: pageSize.value };

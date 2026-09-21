@@ -78,6 +78,7 @@ import { type CanvasDrawingComposable } from "./useCanvasDrawing.composable";
 import { CheckCircle, PenTool } from "lucide-vue-next";
 import ModelSegmenter from "./ModelSegmenter.vue";
 import { useOptions } from "@/composables/useOptions.composable";
+import { can } from "@/auth";
 
 interface SectionData {
   englishName: string;
@@ -115,6 +116,7 @@ const alterations = ref<DisplayAlterationDTO[]>([]);
 const { options: alterationsOptions } = useOptions(alterations as any);
 
 async function getAlterations() {
+  if (!can("alterations.read")) return;
   alterations.value = (
     await apiClient.alterationsControllerGetAlterations()
   ).data;
@@ -149,7 +151,7 @@ async function handleSave() {
 }
 
 onMounted(() => {
-  getAlterations();
+  if (can("alterations.read")) getAlterations();
 });
 
 watch(

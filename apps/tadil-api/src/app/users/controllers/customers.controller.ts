@@ -3,6 +3,7 @@ import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { DataReader } from '@tadil-database';
 import { DisplayUserDTO, PaginatedUsersDTO } from '../dtos';
 import { ROLE } from '@tadil-users';
+import { RequirePermissions } from '../../auth/decorators/permissions.decorator';
 
 @Controller('customers')
 @ApiTags('Customers')
@@ -10,6 +11,7 @@ export class CustomersController {
   constructor(private readonly _dataReader: DataReader) {}
 
   @Get('/')
+  @RequirePermissions('customers.read')
   @ApiOkResponse({ type: PaginatedUsersDTO })
   @ApiQuery({ name: 'search', required: false, description: 'Matches first name, last name or phone' })
   @ApiQuery({ name: 'page', required: false, description: '1-based page number' })
@@ -48,8 +50,10 @@ export class CustomersController {
       this._dataReader.queries.user.count({ where: { role: ROLE.CUSTOMER } }),
     ]);
 
-    const data = users.map((user) => ({
-      ...user,
+    const data = users.map((user) => {
+      const { loginToken, loginRequestStatus, walletBalance, ...safeUser } = user;
+      return ({
+      ...safeUser,
       email: user.email ?? undefined,
       cityNameAr: user.addresses.length > 0 ? user.addresses[0].cityNameAr : undefined,
       cityNameEn: user.addresses.length > 0 ? user.addresses[0].cityNameEn : undefined,
@@ -71,12 +75,14 @@ export class CustomersController {
       streetUr: user.addresses.length > 0 ? user.addresses[0].streetUr ?? undefined : undefined,
       latitude: user.addresses.length > 0 ? user.addresses[0].latitude ?? undefined : undefined,
       longitude: user.addresses.length > 0 ? user.addresses[0].longitude ?? undefined : undefined,
-    }));
+      });
+    });
 
     return { data, total, page: pageNumber, pageSize: size, sortingMax };
   }
 
   @Get('/:id')
+  @RequirePermissions('customers.read')
   @ApiOkResponse({ type: DisplayUserDTO })
   async getCustomerById(
     @Param('id') id: string
@@ -86,8 +92,9 @@ export class CustomersController {
     });
 
     if (!user) return undefined;
+    const { loginToken, loginRequestStatus, walletBalance, ...safeUser } = user;
     return {
-      ...user,
+      ...safeUser,
       email: user.email ?? undefined,
     };
   }

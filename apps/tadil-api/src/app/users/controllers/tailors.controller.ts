@@ -1,3 +1,4 @@
+import { ForbiddenException } from '@nestjs/common';
 import {
   Body,
   Controller,
@@ -17,6 +18,7 @@ import {
   UpdateUserUseCase,
   DeleteUserUseCase,
 } from '@tadil-users';
+import { RequirePermissions } from '../../auth/decorators/permissions.decorator';
 
 @Controller('tailors')
 @ApiTags('Tailors')
@@ -29,6 +31,7 @@ export class TailorsController {
   ) {}
 
   @Get('/')
+  @RequirePermissions('tailors.read')
   @ApiOkResponse({ type: PaginatedUsersDTO })
   @ApiQuery({ name: 'search', required: false, description: 'Matches first name, last name or phone' })
   @ApiQuery({ name: 'page', required: false, description: '1-based page number' })
@@ -67,8 +70,10 @@ export class TailorsController {
       this._dataReader.queries.user.count({ where: { role: ROLE.TAILOR } }),
     ]);
 
-    const data = users.map((user) => ({
-      ...user,
+    const data = users.map((user) => {
+      const { loginToken, loginRequestStatus, walletBalance, ...safeUser } = user;
+      return ({
+      ...safeUser,
       email: user.email ?? undefined,
       cityNameAr: user.addresses.length > 0 ? user.addresses[0].cityNameAr : undefined,
       cityNameEn: user.addresses.length > 0 ? user.addresses[0].cityNameEn : undefined,
@@ -90,12 +95,14 @@ export class TailorsController {
       streetUr: user.addresses.length > 0 ? user.addresses[0].streetUr ?? undefined : undefined,
       latitude: user.addresses.length > 0 ? user.addresses[0].latitude ?? undefined : undefined,
       longitude: user.addresses.length > 0 ? user.addresses[0].longitude ?? undefined : undefined,
-    }));
+      });
+    });
 
     return { data, total, page: pageNumber, pageSize: size, sortingMax };
   }
 
   @Get('/phone/:phone')
+  @RequirePermissions('tailors.read')
   @ApiOkResponse({ type: DisplayUserDTO })
   async getTailorByPhone(
     @Param('phone') phone: string
@@ -105,13 +112,16 @@ export class TailorsController {
     });
 
     if (!user) return undefined;
+    if (user.role !== ROLE.TAILOR) return undefined;
+    const { loginToken, loginRequestStatus, walletBalance, ...safeUser } = user;
     return {
-      ...user,
+      ...safeUser,
       email: user.email ?? undefined,
     };
   }
 
   @Post('/create')
+  @RequirePermissions('tailors.read', 'tailors.create')
   async createTailor(@Body() tailor: CreateUserDTO): Promise<void> {
     await this._createUserUseCase.execute({
       ...tailor,
@@ -120,6 +130,7 @@ export class TailorsController {
   }
 
   @Get('/:id')
+  @RequirePermissions('tailors.read')
   @ApiOkResponse({ type: DisplayUserDTO })
   async getTailorById(
     @Param('id') id: string
@@ -129,17 +140,21 @@ export class TailorsController {
     });
 
     if (!user) return undefined;
+    if (user.role !== ROLE.TAILOR) return undefined;
+    const { loginToken, loginRequestStatus, walletBalance, ...safeUser } = user;
     return {
-      ...user,
+      ...safeUser,
       email: user.email ?? undefined,
     };
   }
 
   @Put('/:id/update')
+  @RequirePermissions('tailors.read', 'tailors.update')
   async updateTailor(
     @Param('id') id: string,
     @Body() tailor: UpdateUserDTO
   ): Promise<void> {
+    await this.assertTailor(id);
     await this._updateUserUseCase.execute({
       ...tailor,
       id: id,
@@ -147,7 +162,17 @@ export class TailorsController {
   }
 
   @Delete('/:id/delete')
+  @RequirePermissions('tailors.read', 'tailors.delete')
   async deleteTailor(@Param('id') id: string): Promise<void> {
+    await this.assertTailor(id);
     await this._deleteUserUseCase.execute({ id });
+  }
+
+  private async assertTailor(id: string): Promise<void> {
+    const user = await this._dataReader.queries.user.findUnique({
+      where: { id },
+      select: { role: true },
+    });
+    if (!user || user.role !== ROLE.TAILOR) throw new ForbiddenException();
   }
 }

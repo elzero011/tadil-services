@@ -42,6 +42,7 @@ import { apiClient, ROLE, type DisplayUserDTO } from "@/integration";
 import { Pagination } from "@/components";
 import AddUserModal from "./AddUserModal.vue";
 import UsersTable from "./components/UsersTable.vue";
+import { can } from "@/auth";
 
 const tailors = ref<DisplayUserDTO[]>([]);
 const isLoading = ref<boolean>(false);
@@ -55,6 +56,8 @@ const sortingMax = ref(0);
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const fetchTailors = async () => {
+  if (!can("tailors.read")) return;
+  if (!can("tailors.read")) return;
   isLoading.value = true;
   try {
     const response = await apiClient.tailorsControllerGetTailors({

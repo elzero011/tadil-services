@@ -1,5 +1,5 @@
 <template>
-  <Button variant="outline" class="w-full" @click="isOpen = true">
+  <Button v-if="can('models.create')" variant="outline" class="w-full" @click="isOpen = true">
     {{ $t("models.addNewModelModal.title") }}
   </Button>
   <Modal v-model="isOpen" @close-modal="closeModal">
@@ -59,6 +59,7 @@ import {
 import { apiClient, type CreateModelDTO } from "@/integration";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { can } from "@/auth";
 
 const { t } = useI18n();
 const { openToast } = useToast();
@@ -101,6 +102,7 @@ function validateCategory() {
 const namesForm = ref<InstanceType<typeof MultiLanguageNameForm>>();
 
 async function createModel() {
+  if (!can("models.create")) return;
   if (!namesForm.value) return;
   try {
     if (namesForm.value.validateForm() && validateCategory()) {

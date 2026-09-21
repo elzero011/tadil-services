@@ -37,7 +37,7 @@
           <td class="ps-2 text-center truncate">{{ cityLabel(customer) || "--" }}</td>
           <td>
             <div class="flex flex-wrap gap-2 justify-center px-1 py-1">
-              <SortingButton
+              <SortingButton v-if="can('customers.update')"
                 :sorting="customer.sorting"
                 :max="maxSorting"
                 :save="(sorting) => updateSorting(customer.id, sorting)"
@@ -62,6 +62,7 @@ import { ClipboardList } from "lucide-vue-next";
 import { apiClient, type DisplayUserDTO } from "@/integration";
 import { useLocalizedCityComposable } from "@/composables";
 import ViewUserModal from "../ViewUserModal.vue";
+import { can } from "@/auth";
 
 defineProps<{
   customers: DisplayUserDTO[];
@@ -74,6 +75,7 @@ const router = useRouter();
 const { cityLabel } = useLocalizedCityComposable();
 
 async function updateSorting(id: string, sorting: number) {
+  if (!can("customers.update")) return;
   await apiClient.usersSortingControllerUpdateSorting(id, { sorting });
   emit("refresh");
 }

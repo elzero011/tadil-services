@@ -47,6 +47,7 @@ import {
   streamToBase64,
 } from '../utils';
 import { DataReader } from '@tadil-database';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
 @Controller('models')
 @ApiTags('Models')
@@ -67,6 +68,7 @@ export class ModelsController {
   ) {}
 
   @Get('/')
+  @RequirePermissions('models.read')
   @ApiOkResponse({ type: DisplayModelDTO, isArray: true })
   async getModels(): Promise<DisplayModelDTO[]> {
     const models = await this._dataReader.queries.model.findMany({
@@ -99,6 +101,7 @@ export class ModelsController {
   }
 
   @Post('/create')
+  @RequirePermissions('models.read', 'models.create')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FilesInterceptor('files', undefined, fileUploadLocalPath))
   async createModel(
@@ -129,6 +132,7 @@ export class ModelsController {
   }
 
   @Post('/images/:id/sections/add')
+  @RequirePermissions('models.read', 'models.update')
   @ApiParam({ name: 'id', type: 'string' })
   async addSection(
     @Param('id') id: string,
@@ -141,6 +145,7 @@ export class ModelsController {
   }
 
   @Patch('/images/sections/:id/update')
+  @RequirePermissions('models.read', 'models.update')
   @ApiParam({ name: 'id', type: 'string' })
   async updateSection(
     @Param('id') id: string,
@@ -153,12 +158,14 @@ export class ModelsController {
   }
 
   @Delete('/images/:id/delete')
+  @RequirePermissions('models.read', 'models.update')
   @ApiParam({ name: 'id', type: 'string' })
   async deleteModelImage(@Param('id') id: string): Promise<void> {
     await this._deleteModelImageUseCase.execute({ imageId: id });
   }
 
   @Get('/images/sections')
+  @RequirePermissions('models.read')
   @ApiOkResponse({ type: DisplaySectionDTO, isArray: true })
   async getSections(): Promise<DisplaySectionDTO[]> {
     const sections = await this._dataReader.queries.section.findMany({
@@ -173,6 +180,7 @@ export class ModelsController {
   }
 
   @Patch('/images/:id/sections/reorder')
+  @RequirePermissions('models.read', 'models.update')
   @ApiParam({ name: 'id', type: 'string' })
   async reorderSections(
     @Param('id') id: string,
@@ -185,12 +193,14 @@ export class ModelsController {
   }
 
   @Delete('/images/sections/:id/delete')
+  @RequirePermissions('models.read', 'models.update')
   @ApiParam({ name: 'id', type: 'string' })
   async deleteSection(@Param('id') id: string): Promise<void> {
     await this._deleteSectionUseCase.execute({ sectionId: id });
   }
 
   @Get('/:id/images')
+  @RequirePermissions('models.read')
   @ApiParam({ name: 'id', type: 'string' })
   @ApiOkResponse({ type: DisplayModelImageDTO, isArray: true })
   async getModelImages(
@@ -239,6 +249,7 @@ export class ModelsController {
   }
 
   @Post('/:id/images/add')
+  @RequirePermissions('models.read', 'models.update')
   @ApiParam({ name: 'id', type: 'string' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: AddModelImageDTO })
@@ -270,6 +281,7 @@ export class ModelsController {
   }
 
   @Patch('/:id/update')
+  @RequirePermissions('models.read', 'models.update')
   @ApiParam({ name: 'id', type: 'string' })
   async updateModel(
     @Param('id') id: string,
@@ -279,6 +291,7 @@ export class ModelsController {
   }
 
   @Delete('/:id/delete')
+  @RequirePermissions('models.read', 'models.delete')
   @ApiParam({ name: 'id', type: 'string' })
   async deleteModel(@Param('id') id: string): Promise<void> {
     await this._deleteModelUseCase.execute({ modelId: id });

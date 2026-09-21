@@ -1,5 +1,5 @@
 <template>
-  <Button @click="isOpen = true">
+  <Button v-if="can('extras.create')" @click="isOpen = true">
     {{ $t("extras.addNewExtraModal.title") }}
   </Button>
   <Modal v-model="isOpen" @close-modal="closeModal">
@@ -52,6 +52,7 @@ import TextInput from "@/components/ui/inputs/TextInput.vue";
 import { apiClient, type CreateExtraDTO } from "@/integration";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { can } from "@/auth";
 
 const { t } = useI18n();
 const { openToast } = useToast();

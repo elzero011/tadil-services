@@ -59,7 +59,7 @@
                 <Eye class="h-4 w-4 text-muted-foreground" />
               </Button>
               <Button 
-                v-if="canAssignTailor(order)" 
+                v-if="canAssignTailor(order) && can('orders.assign_tailor') && can('tailors.read')"
                 variant="outline" 
                 size="sm" 
                 @click="openAssignModal(order)"
@@ -93,6 +93,7 @@ import { Loader2, Eye } from "lucide-vue-next";
 import type { DisplayOrderDTO } from "@/integration";
 import AssignTailorModal from "./AssignTailorModal.vue";
 import OrderDetailsModal from "./OrderDetailsModal.vue";
+import { can } from "@/auth";
 
 const props = defineProps<{
   orders: DisplayOrderDTO[];

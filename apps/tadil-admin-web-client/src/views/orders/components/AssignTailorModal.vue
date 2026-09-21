@@ -31,6 +31,7 @@ import { ref } from "vue";
 import { Modal, Button, InputLabel, SelectMenu } from "@/components";
 import { Loader2 } from "lucide-vue-next";
 import { apiClient, type DisplayOrderDTO } from "@/integration";
+import { can } from "@/auth";
 
 const isOpen = defineModel<boolean>();
 
@@ -52,6 +53,7 @@ const closeModal = () => {
 };
 
 const handleAssign = async () => {
+  if (!can("orders.assign_tailor") || !can("tailors.read")) return;
   if (!props.selectedOrder || !tailorToAssign.value) return;
   isProcessing.value = true;
   try {

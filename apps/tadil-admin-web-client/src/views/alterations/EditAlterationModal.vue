@@ -1,5 +1,5 @@
 <template>
-  <Button variant="outline" size="sm" @click="openModal">
+  <Button v-if="can('alterations.update')" variant="outline" size="sm" @click="openModal">
     <Edit />
   </Button>
   <Modal v-model="isOpen" @close-modal="closeModal">
@@ -76,6 +76,7 @@ import {
   type DisplayAlterationDTO,
   type UpdateAlterationDTO,
 } from "@/integration";
+import { can } from "@/auth";
 import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { Edit } from "lucide-vue-next";

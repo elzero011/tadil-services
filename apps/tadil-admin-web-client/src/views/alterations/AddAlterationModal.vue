@@ -1,5 +1,5 @@
 <template>
-  <Button @click="isOpen = true">
+  <Button v-if="can('alterations.create')" @click="isOpen = true">
     {{ $t("alterations.addNewAlterationModal.title") }}
   </Button>
   <Modal v-model="isOpen" @close-modal="closeModal">
@@ -73,6 +73,7 @@ import {
 } from "@/components";
 import TextInput from "@/components/ui/inputs/TextInput.vue";
 import { apiClient, type CreateAlterationDTO } from "@/integration";
+import { can } from "@/auth";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 

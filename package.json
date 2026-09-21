@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "staff:bootstrap": "tsx libs/infra/tadil-database/prisma/bootstrap-staff.ts",
+    "test:staff:integration": "node scripts/test-staff-auth.mjs",
+    "test:staff": "jest --config apps/tadil-api/jest.auth.config.cjs --runInBand && tsx scripts/verify-endpoint-permissions.ts",
+    "typecheck:admin-api": "tsc -p apps/tadil-api/tsconfig.check.json",
     "start-all": "nx run-many --target=serve tadil-api tadil-admin-web-client tadil-mobile-api tadil-mobile-app --parallel",
     "start-admin": "nx run-many --target=serve tadil-api tadil-admin-web-client",
     "start-admin-api": "nx serve tadil-api",
@@ -22,6 +26,7 @@
   },
   "private": true,
   "dependencies": {
+    "argon2": "^0.44.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/jwt": "^11.0.2",

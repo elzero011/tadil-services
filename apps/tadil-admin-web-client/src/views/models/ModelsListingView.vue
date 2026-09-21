@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold">{{ $t("nav.models") }}</h1>
     <div class="grid grid-cols-[auto_1fr] gap-4 h-full w-full">
       <div class="w-60 space-y-2 h-full overflow-y-auto">
-        <CreateModelModal @created:model="getModels" />
+        <CreateModelModal v-if="can('models.create')" @created:model="getModels" />
         <SkeletonItem
           v-if="isLoading"
           v-for="index in 3"
@@ -61,12 +61,14 @@ import { apiClient, type DisplayModelDTO } from "@/integration";
 import CreateModelModal from "./CreateModelModal.vue";
 import ModelListCard from "./ModelListCard.vue";
 import { SkeletonItem } from "@/components";
+import { can } from "@/auth";
 
 const models = ref<DisplayModelDTO[]>([]);
 const isLoading = ref<boolean>(false);
 const selectedModel = ref<DisplayModelDTO>();
 
 async function getModels() {
+  if (!can("models.read")) return;
   isLoading.value = true;
   models.value = (await apiClient.modelsControllerGetModels()).data;
 

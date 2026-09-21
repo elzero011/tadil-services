@@ -33,6 +33,7 @@
                 <button
                   type="button"
                   class="text-left text-primary hover:underline focus-visible:outline-none focus-visible:underline"
+                  v-if="can('payouts.read')"
                   @click="openWallet(req)"
                 >
                   {{ req.user?.firstName }} {{ req.user?.lastName }}
@@ -43,7 +44,7 @@
               <td class="px-6 py-4 text-xs">{{ formatDate(req.date) }}</td>
               <td class="px-6 py-4">
                 <div class="flex justify-end gap-2">
-                  <DestructiveActionAlert
+                  <DestructiveActionAlert v-if="can('payouts.fulfill')"
                     :title="$t('payoutRequests.confirmations.fulfillTitle')"
                     :description="$t('payoutRequests.confirmations.fulfill')"
                     :confirm-text="$t('payoutRequests.buttons.fulfill')"
@@ -55,7 +56,7 @@
                       </Button>
                     </template>
                   </DestructiveActionAlert>
-                  <DestructiveActionAlert
+                  <DestructiveActionAlert v-if="can('payouts.reject')"
                     :title="$t('payoutRequests.confirmations.rejectTitle')"
                     :description="$t('payoutRequests.confirmations.reject')"
                     :confirm-text="$t('payoutRequests.buttons.reject')"
@@ -89,6 +90,7 @@ import { apiClient } from "@/integration";
 import { Button, DestructiveActionAlert } from "@/components";
 import WalletDetailsModal from "./WalletDetailsModal.vue";
 import { Loader2 } from "lucide-vue-next";
+import { can } from "@/auth";
 
 const requests = ref<any[]>([]);
 const isLoading = ref(true);
@@ -105,6 +107,7 @@ const openWallet = (req: any) => {
 };
 
 const fetchRequests = async () => {
+  if (!can("payouts.read")) return;
   isLoading.value = true;
   try {
     const response = await apiClient.payoutRequestsControllerGetPending();
@@ -117,6 +120,7 @@ const fetchRequests = async () => {
 };
 
 const handleFulfill = async (id: string) => {
+  if (!can("payouts.fulfill")) return;
   isProcessing.value = id;
   try {
     await apiClient.payoutRequestsControllerFulfill(id);
@@ -129,6 +133,7 @@ const handleFulfill = async (id: string) => {
 };
 
 const handleReject = async (id: string) => {
+  if (!can("payouts.reject")) return;
   isProcessing.value = id;
   try {
     await apiClient.payoutRequestsControllerReject(id);

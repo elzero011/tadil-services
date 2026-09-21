@@ -2,13 +2,17 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   NotFoundException,
   Param,
   Patch,
+  Req,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { DataReader } from '@tadil-database';
+import { ROLE } from '@tadil-users';
 import { UpdateSortingDTO } from '../dtos';
+import { AuthenticatedRoute } from '../../auth/decorators/authenticated.decorator';
 
 @Controller('users')
 @ApiTags('Users')
@@ -16,16 +20,27 @@ export class UsersSortingController {
   constructor(private readonly _dataReader: DataReader) {}
 
   @Patch('/:id/sorting')
+  // The target role is checked below; customers have no sorting mutation permission.
+  @AuthenticatedRoute()
   @ApiParam({ name: 'id', type: 'string' })
   async updateSorting(
     @Param('id') id: string,
-    @Body() body: UpdateSortingDTO
+    @Body() body: UpdateSortingDTO,
+    @Req() req: { staff?: { permissions?: string[] } }
   ): Promise<void> {
     const user = await this._dataReader.queries.user.findUnique({
       where: { id },
       select: { role: true },
     });
     if (!user) throw new NotFoundException('User not found');
+    if (user.role !== ROLE.TAILOR && user.role !== ROLE.COURIER) {
+      throw new BadRequestException('Only tailors and couriers can be sorted');
+    }
+    const resource = user.role === ROLE.TAILOR ? 'tailors' : 'couriers';
+    const permissions = req.staff?.permissions ?? [];
+    if (![`${resource}.read`, `${resource}.update`].every((permission) => permissions.includes(permission))) {
+      throw new ForbiddenException();
+    }
 
     const users = await this._dataReader.queries.user.findMany({
       where: { role: user.role },

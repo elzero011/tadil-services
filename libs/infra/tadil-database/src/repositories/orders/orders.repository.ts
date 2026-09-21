@@ -1,4 +1,5 @@
-import { Order, OrdersRepository } from '@tadil-orders';
+import { OrdersRepository } from '@tadil-orders';
+import { Order } from '@tadil-common';
 import { DbClient } from '../../dbClient';
 import { OrderStatus } from '@prisma/client';
 

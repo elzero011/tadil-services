@@ -434,3 +434,78 @@ model PayoutRequest {
 
     @@map("payout-requests")
 }
+
+model StaffAccount {
+    id           String             @id @default(uuid())
+    email        String             @unique
+    name         String
+    passwordHash String
+    active       Boolean            @default(true)
+    isSystemAdmin Boolean           @default(false)
+    createdAt    DateTime           @default(now())
+    updatedAt    DateTime           @updatedAt
+    roles        StaffAccountRole[]
+    grants       String[]           @default([])
+    denials      String[]           @default([])
+    sessions     StaffSession[]
+    tokens       StaffToken[]
+    audits       StaffAudit[]       @relation("staff-audit-actor")
+}
+
+model StaffRole {
+    id        String             @id @default(uuid())
+    name      String             @unique
+    permissions String[]         @default([])
+    isSystem  Boolean            @default(false)
+    createdAt DateTime           @default(now())
+    updatedAt DateTime           @updatedAt
+    accounts  StaffAccountRole[]
+}
+
+model StaffAccountRole {
+    accountId String
+    roleId    String
+    account   StaffAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+    role      StaffRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+    @@id([accountId, roleId])
+}
+
+model StaffSession {
+    id        String       @id @default(uuid())
+    tokenHash String       @unique
+    csrfHash  String
+    accountId String
+    account   StaffAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+    expiresAt DateTime
+    createdAt DateTime     @default(now())
+    revokedAt DateTime?
+}
+
+model StaffToken {
+    id        String       @id @default(uuid())
+    tokenHash String       @unique
+    type      String
+    accountId String
+    account   StaffAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+    expiresAt DateTime
+    usedAt    DateTime?
+    createdAt DateTime     @default(now())
+}
+
+model StaffAudit {
+    id        String       @id @default(uuid())
+    actorId   String?
+    actor     StaffAccount? @relation("staff-audit-actor", fields: [actorId], references: [id], onDelete: SetNull)
+    action    String
+    targetType String
+    targetId  String?
+    metadata  Json?
+    createdAt DateTime     @default(now())
+}
+
+model StaffLoginThrottle {
+    email       String   @id
+    failures    Int      @default(0)
+    lockedUntil DateTime?
+    updatedAt   DateTime @updatedAt
+}

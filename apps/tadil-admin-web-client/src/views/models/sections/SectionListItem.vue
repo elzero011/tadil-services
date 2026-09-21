@@ -11,7 +11,7 @@
         :imageBase64String="imageBase64String"
         @updated:section="emit('updated:section')"
       />
-      <Button variant="destructive" size="icon-sm" @click="deleteSection()">
+      <Button v-if="can('models.delete')" variant="destructive" size="icon-sm" @click="deleteSection()">
         <Trash2 class="h-4 w-4" />
       </Button>
     </div>
@@ -26,6 +26,7 @@ import { Trash2 } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
 import { useTranslatedNamesComposable } from "@/composables";
 import EditSectionModal from "./EditSectionModal.vue";
+import { can } from "@/auth";
 
 const { t } = useI18n();
 const { openToast } = useToast();
@@ -42,6 +43,7 @@ const props = defineProps<{
 const { translatedName } = useTranslatedNamesComposable(props.section);
 
 async function deleteSection() {
+  if (!can("models.delete")) return;
   try {
     await apiClient.modelsControllerDeleteSection(props.section.id);
     props.drawingState.unhighlightPolygon();

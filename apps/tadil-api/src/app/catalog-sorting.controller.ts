@@ -2,13 +2,17 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   NotFoundException,
   Param,
   Patch,
+  Req,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { DataReader } from '@tadil-database';
+import type { Prisma } from '@prisma/client';
 import { UpdateSortingDTO } from './users/dtos';
+import { AuthenticatedRoute } from './auth/decorators/authenticated.decorator';
 
 @Controller('catalog')
 @ApiTags('Catalog')
@@ -16,12 +20,20 @@ export class CatalogSortingController {
   constructor(private readonly _dataReader: DataReader) {}
 
   @Patch('/:entity/:id/sorting')
+  @AuthenticatedRoute()
   @ApiParam({ name: 'entity', enum: ['alterations', 'informations', 'extras'] })
   async updateSorting(
     @Param('entity') entity: string,
     @Param('id') id: string,
-    @Body() body: UpdateSortingDTO
+    @Body() body: UpdateSortingDTO,
+    @Req() req: { staff?: { permissions?: string[] } }
   ): Promise<void> {
+    const permissions = req.staff?.permissions ?? [];
+    const required = [`${entity}.read`, `${entity}.update`];
+    if (!['alterations', 'informations', 'extras'].includes(entity) ||
+        !required.every((permission) => permissions.includes(permission))) {
+      throw new ForbiddenException();
+    }
     switch (entity) {
       case 'alterations':
         return this.moveAlteration(id, Number(body.sorting));
@@ -77,7 +89,7 @@ export class CatalogSortingController {
     rows: { id: string }[],
     id: string,
     position: number,
-    update: (id: string, sorting: number) => ReturnType<typeof this._dataReader.queries.extra.update>
+    update: (id: string, sorting: number) => Prisma.PrismaPromise<unknown>
   ): Promise<void> {
     if (!Number.isInteger(position) || position < 1 || position > rows.length) {
       throw new BadRequestException(`Sorting must be between 1 and ${rows.length}`);

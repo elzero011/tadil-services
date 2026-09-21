@@ -16,12 +16,13 @@ export default defineConfig(({ mode }) => {
       allowedHosts: [
         "localhost",
         "tadil-admin-web-client-production.up.railway.app",
+        ...(env.STAFF_PREVIEW_ORIGIN ? [new URL(env.STAFF_PREVIEW_ORIGIN).hostname] : []),
       ],
       host: "0.0.0.0",
       port: 4000,
       proxy: {
         "/api": {
-          target: VITE_TADIL_API_URL,
+          target: env.TADIL_API_PROXY_TARGET || VITE_TADIL_API_URL || "http://localhost:4444",
           changeOrigin: true,
         },
         // Proxy DeepL so the API key stays server-side and CORS is avoided.

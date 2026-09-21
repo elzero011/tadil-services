@@ -87,18 +87,18 @@
           </td>
           <td>
             <div class="flex flex-wrap gap-2 justify-center px-1 py-1">
-              <SortingButton
+            <SortingButton v-if="can(userType === ROLE.TAILOR ? 'tailors.update' : 'couriers.update')"
                 :sorting="user.sorting"
                 :max="maxSorting"
                 :save="(sorting) => updateSorting(user.id, sorting)"
               />
               <ViewUserModal :user="user" :user-type="userType" />
-              <EditUserModal
+                <EditUserModal
                 :user="user"
                 :selectedUserType="userType"
                 @updated:user="handleRefresh"
               />
-              <DestructiveActionAlert
+                <DestructiveActionAlert v-if="can(userType === ROLE.TAILOR ? 'tailors.delete' : 'couriers.delete')"
                 :title="$t(`users.deleteUser.confirmMessage`)"
                 :onConfirm="() => deleteUser(user.id)"
               >
@@ -130,6 +130,7 @@ import EditUserModal from "../EditUserModal.vue";
 import ViewUserModal from "../ViewUserModal.vue";
 import { apiClient, ROLE, type DisplayUserDTO, type RoleType } from "@/integration";
 import { useLocalizedCityComposable } from "@/composables";
+import { can } from "@/auth";
 
 const { t } = useI18n();
 const { openToast } = useToast();
@@ -151,11 +152,13 @@ const handleRefresh = () => {
 };
 
 async function updateSorting(id: string, sorting: number) {
+  if (!can(props.userType === ROLE.TAILOR ? "tailors.update" : "couriers.update")) return;
   await apiClient.usersSortingControllerUpdateSorting(id, { sorting });
   handleRefresh();
 }
 
 async function deleteUser(id: string) {
+  if (!can(props.userType === ROLE.TAILOR ? "tailors.delete" : "couriers.delete")) return;
   try {
     switch (props.userType) {
       case ROLE.TAILOR: {

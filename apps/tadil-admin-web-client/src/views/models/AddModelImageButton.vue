@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label
+    <label v-if="can('models.update')"
       for="modelImage"
       class="border border-border rounded-md flex justify-center items-center h-40 w-40 bg-muted/70 hover:bg-muted cursor-pointer"
     >
@@ -23,6 +23,7 @@ import { apiClient } from "@/integration";
 import { Plus } from "lucide-vue-next";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { can } from "@/auth";
 
 const { t } = useI18n();
 const { openToast } = useToast();
@@ -38,6 +39,7 @@ const emit = defineEmits<{
 const selectedFiles = ref<File[]>([]);
 
 async function handleFileInputChange(event: Event) {
+  if (!can("models.update")) return;
   const target = event.target as HTMLInputElement;
   const files = Array.from(target.files ?? []);
   selectedFiles.value = files;

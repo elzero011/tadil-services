@@ -2,7 +2,7 @@
   <div>
     <h1 class="text-2xl font-bold">{{ $t("nav.extras") }}</h1>
     <div class="flex justify-end">
-      <AddExtraModal @created:extra="getExtras" />
+      <AddExtraModal v-if="can('extras.create')" @created:extra="getExtras" />
     </div>
     <div class="mt-4 border rounded-lg overflow-auto">
       <table class="relative w-full table-fixed text-sm">
@@ -96,17 +96,17 @@
             </td>
             <td class="">
               <div class="flex gap-2 justify-center">
-                <SortingButton
+                <SortingButton v-if="can('extras.update')"
                   :sorting="extra.sorting"
                   :max="extras.length"
                   :save="(sorting) => updateSorting(extra, sorting)"
                 />
-                <EditExtraModal
+                <EditExtraModal v-if="can('extras.update')"
                   :key="extra.id"
                   :extra="extra"
                   @updated:extra="getExtras"
                 />
-                <DestructiveActionAlert
+                <DestructiveActionAlert v-if="can('extras.delete')"
                   :title="$t('extras.deleteExtra.confirmMessage')"
                   :onConfirm="() => deleteExtra(extra.id)"
                 >
@@ -136,6 +136,7 @@ import {
 } from "@/components";
 import { Trash2 } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
+import { can } from "@/auth";
 import AddExtraModal from "./AddExtraModal.vue";
 import EditExtraModal from "./EditExtraModal.vue";
 import { apiClient, type DisplayExtraDTO } from "@/integration";
@@ -147,12 +148,14 @@ const extras = ref<DisplayExtraDTO[]>([]);
 const isLoading = ref<boolean>(false);
 
 async function getExtras() {
+  if (!can("extras.read")) return;
   isLoading.value = true;
   extras.value = (await apiClient.extrasControllerGetExtras()).data;
   isLoading.value = false;
 }
 
 async function updateSorting(extra: DisplayExtraDTO, sorting: number) {
+  if (!can("extras.update")) return;
   await apiClient.catalogSortingControllerUpdateSorting("extras", extra.id, {
     sorting,
   });
@@ -160,6 +163,7 @@ async function updateSorting(extra: DisplayExtraDTO, sorting: number) {
 }
 
 async function deleteExtra(extraId: string) {
+  if (!can("extras.delete")) return;
   try {
     await apiClient.extrasControllerDeleteExtra(extraId);
     openToast(t("extras.deleteExtra.success"));

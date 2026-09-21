@@ -2,7 +2,7 @@
   <div>
     <h1 class="text-2xl font-bold">{{ $t("nav.informations") }}</h1>
     <div class="flex justify-end">
-      <AddInformationModal
+      <AddInformationModal v-if="can('informations.create') && can('extras.read')"
         :extras="extras"
         :extrasOptions="extrasOptions"
         @created:information="getInformations"
@@ -89,19 +89,19 @@
             </td>
             <td class="">
               <div class="flex gap-2 justify-center">
-                <SortingButton
+                <SortingButton v-if="can('informations.update')"
                   :sorting="information.sorting"
                   :max="informations.length"
                   :save="(sorting) => updateSorting(information, sorting)"
                 />
-                <EditInformationModal
+                <EditInformationModal v-if="can('informations.update') && can('extras.read')"
                   :key="information.id"
                   :information="information"
                   :extras="extras"
                   :extrasOptions="extrasOptions"
                   @updated:information="getInformations"
                 />
-                <DestructiveActionAlert
+                <DestructiveActionAlert v-if="can('informations.delete')"
                   :title="$t('informations.deleteInformation.confirmMessage')"
                   :onConfirm="() => deleteInformation(information.id)"
                 >
@@ -137,6 +137,7 @@ import {
   type DisplayInformationDTO,
 } from "@/integration";
 import { useI18n } from "vue-i18n";
+import { can } from "@/auth";
 import EditInformationModal from "./EditInformationModal.vue";
 
 const { t, locale } = useI18n();
@@ -146,6 +147,7 @@ const informations = ref<DisplayInformationDTO[]>([]);
 const isLoading = ref<boolean>(false);
 
 async function getInformations() {
+  if (!can("informations.read")) return;
   isLoading.value = true;
   informations.value = (
     await apiClient.informationsControllerGetInformations()
@@ -157,6 +159,7 @@ async function updateSorting(
   information: DisplayInformationDTO,
   sorting: number
 ) {
+  if (!can("informations.update")) return;
   await apiClient.catalogSortingControllerUpdateSorting(
     "informations",
     information.id,
@@ -166,6 +169,7 @@ async function updateSorting(
 }
 
 async function deleteInformation(informationId: string) {
+  if (!can("informations.delete")) return;
   try {
     await apiClient.informationsControllerDeleteInformation(informationId);
     openToast(t("informations.deleteInformation.success"));
@@ -212,9 +216,8 @@ const extrasOptions = computed(() => {
 });
 
 onBeforeMount(async () => {
-  await Promise.all([
-    await getInformations(),
-    (extras.value = (await apiClient.extrasControllerGetExtras()).data),
-  ]);
+  await getInformations();
+  if ((can("informations.create") || can("informations.update")) && can("extras.read"))
+    extras.value = (await apiClient.extrasControllerGetExtras()).data;
 });
 </script>

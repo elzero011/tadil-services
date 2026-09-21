@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { DataReader } from '@tadil-database';
 import { DisplayBoundaryDTO, DisplayCityDTO, DisplayDistrictDTO } from './dtos';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
 type Geometry = { type: string; coordinates: number[][][] };
 
@@ -31,6 +32,7 @@ export class LocationsController {
   constructor(private readonly _dataReader: DataReader) {}
 
   @Get('cities')
+  @RequirePermissions('locations.read')
   @ApiOkResponse({ type: DisplayCityDTO, isArray: true })
   @ApiQuery({ name: 'search', type: 'string', required: false })
   @ApiQuery({ name: 'regionId', type: 'number', required: false })
@@ -67,6 +69,7 @@ export class LocationsController {
   }
 
   @Get('cities/:cityId/districts')
+  @RequirePermissions('locations.read')
   @ApiParam({ name: 'cityId', type: 'number' })
   @ApiOkResponse({ type: DisplayDistrictDTO, isArray: true })
   async getDistricts(
@@ -89,6 +92,7 @@ export class LocationsController {
   }
 
   @Get('districts/:districtId/boundary')
+  @RequirePermissions('locations.read')
   @ApiParam({ name: 'districtId', type: 'string' })
   @ApiOkResponse({ type: DisplayBoundaryDTO })
   async getDistrictBoundary(
@@ -103,6 +107,7 @@ export class LocationsController {
   }
 
   @Get('cities/:cityId/boundary')
+  @RequirePermissions('locations.read')
   @ApiParam({ name: 'cityId', type: 'number' })
   @ApiOkResponse({ type: DisplayBoundaryDTO })
   async getCityBoundary(

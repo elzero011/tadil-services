@@ -1,10 +1,10 @@
 <template>
   <div>
-    <Button variant="outline" size="icon-sm" @click="openEditModal">
+    <Button v-if="can('models.update') && can('alterations.read')" variant="outline" size="icon-sm" @click="openEditModal">
       <Edit class="h-4 w-4" />
     </Button>
     <Modal v-model="isOpen" @close-modal="closeModal">
-      <SectionEditor
+      <SectionEditor v-if="isOpen"
         v-model="localSection"
         :imageBase64String="imageBase64String"
         :drawingState="drawingState"
@@ -28,6 +28,7 @@ import { ref } from "vue";
 import { useCanvasDrawing } from "./useCanvasDrawing.composable";
 import { Edit } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
+import { can } from "@/auth";
 import SectionEditor from "./SectionEditor.vue";
 
 const { t } = useI18n();
@@ -81,6 +82,7 @@ function closeModal() {
 }
 
 async function updateSection() {
+  if (!can("models.update")) return;
   try {
     await apiClient.modelsControllerUpdateSection(
       props.section.id,

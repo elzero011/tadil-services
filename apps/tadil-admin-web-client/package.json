@@ -15,7 +15,6 @@
     "@turf/boolean-point-in-polygon": "^7.3.0",
     "@turf/helpers": "^7.3.0",
     "@turf/nearest-point-on-line": "^7.3.0",
-    "keycloak-js": "^26.2.4",
     "leaflet": "^1.9.4",
     "lucide-vue-next": "^0.552.0",
     "tailwindcss": "^4.1.16",

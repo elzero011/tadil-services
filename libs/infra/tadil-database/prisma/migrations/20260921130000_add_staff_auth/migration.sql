@@ -1,0 +1,16 @@
+CREATE TABLE "StaffAccount" ("id" TEXT NOT NULL, "email" TEXT NOT NULL, "name" TEXT NOT NULL, "passwordHash" TEXT NOT NULL, "active" BOOLEAN NOT NULL DEFAULT true, "isSystemAdmin" BOOLEAN NOT NULL DEFAULT false, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL, "grants" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[], "denials" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[], CONSTRAINT "StaffAccount_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "StaffRole" ("id" TEXT NOT NULL, "name" TEXT NOT NULL, "permissions" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[], "isSystem" BOOLEAN NOT NULL DEFAULT false, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL, CONSTRAINT "StaffRole_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "StaffAccountRole" ("accountId" TEXT NOT NULL, "roleId" TEXT NOT NULL, CONSTRAINT "StaffAccountRole_pkey" PRIMARY KEY ("accountId","roleId"));
+CREATE TABLE "StaffSession" ("id" TEXT NOT NULL, "tokenHash" TEXT NOT NULL, "csrfHash" TEXT NOT NULL, "accountId" TEXT NOT NULL, "expiresAt" TIMESTAMP(3) NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "revokedAt" TIMESTAMP(3), CONSTRAINT "StaffSession_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "StaffToken" ("id" TEXT NOT NULL, "tokenHash" TEXT NOT NULL, "type" TEXT NOT NULL, "accountId" TEXT NOT NULL, "expiresAt" TIMESTAMP(3) NOT NULL, "usedAt" TIMESTAMP(3), "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "StaffToken_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "StaffAudit" ("id" TEXT NOT NULL, "actorId" TEXT, "action" TEXT NOT NULL, "targetType" TEXT NOT NULL, "targetId" TEXT, "metadata" JSONB, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "StaffAudit_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "StaffLoginThrottle" ("email" TEXT NOT NULL, "failures" INTEGER NOT NULL DEFAULT 0, "lockedUntil" TIMESTAMP(3), "updatedAt" TIMESTAMP(3) NOT NULL, CONSTRAINT "StaffLoginThrottle_pkey" PRIMARY KEY ("email"));
+CREATE UNIQUE INDEX "StaffAccount_email_key" ON "StaffAccount"("email");
+CREATE UNIQUE INDEX "StaffRole_name_key" ON "StaffRole"("name");
+CREATE UNIQUE INDEX "StaffSession_tokenHash_key" ON "StaffSession"("tokenHash");
+CREATE UNIQUE INDEX "StaffToken_tokenHash_key" ON "StaffToken"("tokenHash");
+ALTER TABLE "StaffAccountRole" ADD CONSTRAINT "StaffAccountRole_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "StaffAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "StaffAccountRole" ADD CONSTRAINT "StaffAccountRole_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "StaffRole"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "StaffSession" ADD CONSTRAINT "StaffSession_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "StaffAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "StaffToken" ADD CONSTRAINT "StaffToken_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "StaffAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "StaffAudit" ADD CONSTRAINT "StaffAudit_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "StaffAccount"("id") ON DELETE SET NULL ON UPDATE CASCADE;

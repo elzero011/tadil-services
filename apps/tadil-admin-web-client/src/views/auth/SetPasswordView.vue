@@ -1,2 +1,76 @@
-<template><main class="min-h-screen grid place-items-center bg-muted/20 p-6"><form class="w-full max-w-md space-y-5 rounded-xl bg-background p-8 shadow" @submit.prevent="submit"><h1 class="text-2xl font-semibold">Set your password</h1><p class="text-sm text-muted-foreground">Use at least 12 characters with upper/lowercase letters, a number, and a symbol.</p><p v-if="message" class="text-sm">{{ message }}</p><input v-model="password" type="password" minlength="12" required placeholder="New password" class="w-full rounded border p-3" /><input v-model="confirmation" type="password" minlength="12" required placeholder="Confirm password" class="w-full rounded border p-3" /><button class="w-full rounded bg-primary p-3 text-primary-foreground">Save password</button></form></main></template>
-<script setup lang="ts">import { ref } from "vue"; import { useRouter } from "vue-router"; import { authHttp } from "@/auth"; const router = useRouter(); const password = ref(""); const confirmation = ref(""); const message = ref(""); const hash = window.location.hash.replace(/^#/, ""); const token = decodeURIComponent(hash.startsWith("token=") ? hash.slice(6) : hash); window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`); const valid = (value: string) => value.length >= 12 && /[a-z]/.test(value) && /[A-Z]/.test(value) && /\d/.test(value) && /[^A-Za-z\d]/.test(value); const submit = async () => { if (!valid(password.value)) { message.value = "Password does not meet the requirements."; return; } if (password.value !== confirmation.value) { message.value = "Passwords do not match."; return; } try { await authHttp.post("/api/auth/accept-invitation", { token, password: password.value }); message.value = "Password saved. You can now sign in."; setTimeout(() => router.replace("/login"), 700); } catch { message.value = "This invitation is invalid or expired."; } };</script>
+<template>
+  <main class="min-h-screen grid place-items-center bg-muted/20 p-6">
+    <form
+      class="w-full max-w-md space-y-5 rounded-xl bg-background p-8 shadow"
+      @submit.prevent="submit"
+    >
+      <h1 class="text-2xl font-semibold">Set your password</h1>
+      <p class="text-sm text-muted-foreground">
+        Use at least 12 characters with upper/lowercase letters, a number, and a
+        symbol.
+      </p>
+      <p v-if="message" class="text-sm">{{ message }}</p>
+      <input
+        v-model="password"
+        type="password"
+        minlength="12"
+        required
+        placeholder="New password"
+        class="w-full rounded border p-3"
+      /><input
+        v-model="confirmation"
+        type="password"
+        minlength="12"
+        required
+        placeholder="Confirm password"
+        class="w-full rounded border p-3"
+      /><button class="w-full rounded bg-primary p-3 text-primary-foreground">
+        Save password
+      </button>
+    </form>
+  </main>
+</template>
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { authHttp } from '@/auth';
+const router = useRouter();
+const password = ref('');
+const confirmation = ref('');
+const message = ref('');
+const hash = window.location.hash.replace(/^#/, '');
+const token = decodeURIComponent(
+  hash.startsWith('token=') ? hash.slice(6) : hash
+);
+window.history.replaceState(
+  {},
+  document.title,
+  `${window.location.pathname}${window.location.search}`
+);
+const valid = (value: string) =>
+  value.length >= 12 &&
+  /[a-z]/.test(value) &&
+  /[A-Z]/.test(value) &&
+  /\d/.test(value) &&
+  /[^A-Za-z\d]/.test(value);
+const submit = async () => {
+  if (!valid(password.value)) {
+    message.value = 'Password does not meet the requirements.';
+    return;
+  }
+  if (password.value !== confirmation.value) {
+    message.value = 'Passwords do not match.';
+    return;
+  }
+  try {
+    await authHttp.post('/api/auth/accept-invitation', {
+      token,
+      password: password.value,
+    });
+    message.value = 'Password saved. You can now sign in.';
+    setTimeout(() => router.replace('/login'), 700);
+  } catch {
+    message.value = 'This invitation is invalid or expired.';
+  }
+};
+</script>

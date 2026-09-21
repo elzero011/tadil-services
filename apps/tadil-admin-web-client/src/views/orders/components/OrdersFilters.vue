@@ -5,7 +5,7 @@
       <SelectMenu v-model="filters.status" :options="statusOptions" class="w-full" />
     </div>
 
-    <div class="space-y-1.5 flex-1 min-w-0">
+    <div v-if="showTailorFilter" class="space-y-1.5 flex-1 min-w-0">
       <label class="text-xs font-medium uppercase text-muted-foreground">{{ $t("orders.filters.tailor") }}</label>
       <SearchableSelect
         v-model="filters.tailorId"
@@ -20,7 +20,7 @@
       />
     </div>
 
-    <div class="space-y-1.5 flex-1 min-w-0">
+    <div v-if="showCourierFilter" class="space-y-1.5 flex-1 min-w-0">
       <label class="text-xs font-medium uppercase text-muted-foreground">{{ $t("orders.filters.courier") }}</label>
       <SearchableSelect
         v-model="filters.courierId"
@@ -35,7 +35,7 @@
       />
     </div>
 
-    <div class="space-y-1.5 flex-1 min-w-0">
+    <div v-if="showCustomerFilter" class="space-y-1.5 flex-1 min-w-0">
       <label class="text-xs font-medium uppercase text-muted-foreground">{{ $t("orders.filters.customer") }}</label>
       <SearchableSelect
         v-model="filters.customerId"
@@ -80,7 +80,7 @@ export interface OrdersFilterState {
 
 const filters = defineModel<OrdersFilterState>({ required: true });
 
-defineProps<{
+const { showTailorFilter = true, showCourierFilter = true, showCustomerFilter = true } = defineProps<{
   statusOptions: { key: string; label: string }[];
   tailorOptions: { key: string; label: string }[];
   courierOptions: { key: string; label: string }[];
@@ -91,6 +91,9 @@ defineProps<{
   tailorLoading: boolean;
   courierLoading: boolean;
   customerLoading: boolean;
+  showTailorFilter?: boolean;
+  showCourierFilter?: boolean;
+  showCustomerFilter?: boolean;
 }>();
 
 const emit = defineEmits<{

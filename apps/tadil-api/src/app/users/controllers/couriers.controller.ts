@@ -1,3 +1,4 @@
+import { ForbiddenException } from '@nestjs/common';
 import {
   Body,
   Controller,
@@ -17,6 +18,7 @@ import {
   UpdateUserUseCase,
   DeleteUserUseCase,
 } from '@tadil-users';
+import { RequirePermissions } from '../../auth/decorators/permissions.decorator';
 
 @Controller('couriers')
 @ApiTags('Couriers')
@@ -29,6 +31,7 @@ export class CouriersController {
   ) {}
 
   @Get('/')
+  @RequirePermissions('couriers.read')
   @ApiOkResponse({ type: PaginatedUsersDTO })
   @ApiQuery({ name: 'search', required: false, description: 'Matches first name, last name or phone' })
   @ApiQuery({ name: 'page', required: false, description: '1-based page number' })
@@ -67,8 +70,10 @@ export class CouriersController {
       this._dataReader.queries.user.count({ where: { role: ROLE.COURIER } }),
     ]);
 
-    const data = users.map((user) => ({
-      ...user,
+    const data = users.map((user) => {
+      const { loginToken, loginRequestStatus, walletBalance, ...safeUser } = user;
+      return ({
+      ...safeUser,
       email: user.email ?? undefined,
       cityNameAr: user.addresses.length > 0 ? user.addresses[0].cityNameAr : undefined,
       cityNameEn: user.addresses.length > 0 ? user.addresses[0].cityNameEn : undefined,
@@ -90,13 +95,15 @@ export class CouriersController {
       streetUr: user.addresses.length > 0 ? user.addresses[0].streetUr ?? undefined : undefined,
       latitude: user.addresses.length > 0 ? user.addresses[0].latitude ?? undefined : undefined,
       longitude: user.addresses.length > 0 ? user.addresses[0].longitude ?? undefined : undefined,
-    }));
+      });
+    });
 
     return { data, total, page: pageNumber, pageSize: size, sortingMax };
   }
 
 
   @Get('/phone/:phone')
+  @RequirePermissions('couriers.read')
   @ApiOkResponse({ type: DisplayUserDTO })
   async getCourierByPhone(
     @Param('phone') phone: string
@@ -106,13 +113,16 @@ export class CouriersController {
     });
 
     if (!user) return undefined;
+    if (user.role !== ROLE.COURIER) return undefined;
+    const { loginToken, loginRequestStatus, walletBalance, ...safeUser } = user;
     return {
-      ...user,
+      ...safeUser,
       email: user.email ?? undefined,
     };
   }
 
   @Post('/create')
+  @RequirePermissions('couriers.read', 'couriers.create')
   async createCourier(@Body() courier: CreateUserDTO): Promise<void> {
     console.log(courier);
     await this._createUserUseCase.execute({
@@ -122,6 +132,7 @@ export class CouriersController {
   }
 
   @Get('/:id')
+  @RequirePermissions('couriers.read')
   @ApiOkResponse({ type: DisplayUserDTO })
   async getCourierById(
     @Param('id') id: string
@@ -131,17 +142,21 @@ export class CouriersController {
     });
 
     if (!user) return undefined;
+    if (user.role !== ROLE.COURIER) return undefined;
+    const { loginToken, loginRequestStatus, walletBalance, ...safeUser } = user;
     return {
-      ...user,
+      ...safeUser,
       email: user.email ?? undefined,
     };
   }
 
   @Put('/:id/update')
+  @RequirePermissions('couriers.read', 'couriers.update')
   async updateCourier(
     @Param('id') id: string,
     @Body() courier: UpdateUserDTO
   ): Promise<void> {
+    await this.assertCourier(id);
     await this._updateUserUseCase.execute({
       ...courier,
       id: id,
@@ -149,7 +164,17 @@ export class CouriersController {
   }
 
   @Delete('/:id/delete')
+  @RequirePermissions('couriers.read', 'couriers.delete')
   async deleteCourier(@Param('id') id: string): Promise<void> {
+    await this.assertCourier(id);
     await this._deleteUserUseCase.execute({ id });
+  }
+
+  private async assertCourier(id: string): Promise<void> {
+    const user = await this._dataReader.queries.user.findUnique({
+      where: { id },
+      select: { role: true },
+    });
+    if (!user || user.role !== ROLE.COURIER) throw new ForbiddenException();
   }
 }
