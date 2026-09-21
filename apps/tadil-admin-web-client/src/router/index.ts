@@ -21,6 +21,7 @@ const routes: RouteRecordRaw[] = [
     path: "/", component: () => import("@/layout/Layout.vue"), redirect: () => pages.find(([, permission]) => !permission || can(permission))?.[0] ? `/${pages.find(([, permission]) => !permission || can(permission))?.[0]}` : "/no-access",
     children: [
       ...pages.map(([path, permission, component]) => ({ path, component, meta: permission ? { permission } : {} })),
+    ],
   },
 ];
 const router = createRouter({ history: createWebHistory(), routes });
