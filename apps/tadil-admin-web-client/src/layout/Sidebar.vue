@@ -50,23 +50,14 @@ import {
 } from "lucide-vue-next";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import keycloak from "../integration/keycloak";
+import { can, logout } from "../auth";
 
 const { t } = useI18n();
 const navItems = computed(() => [
-  { path: "/required-informations", label: t("nav.informations"), icon: Spool },
-  { path: "/alterations", label: t("nav.alterations"), icon: HandCoins },
-  { path: "/extras", label: t("nav.extras"), icon: GitBranchPlus },
-  { path: "/models", label: t("nav.models"), icon: ScissorsLineDashed },
-  { path: "/tailors", label: t("nav.tailors"), icon: Scissors },
-  { path: "/couriers", label: t("nav.couriers"), icon: Truck },
-  { path: "/customers", label: t("nav.customers"), icon: Users },
-  { path: "/login-requests", label: t("nav.loginRequests"), icon: KeyRound },
-  { path: "/payout-requests", label: t("nav.payoutRequests"), icon: HandCoins },
-  { path: "/orders", label: t("nav.orders"), icon: ClipboardList },
-]);
+  { path: "/required-informations", label: t("nav.informations"), icon: Spool, permission: "informations.read" }, { path: "/alterations", label: t("nav.alterations"), icon: HandCoins, permission: "alterations.read" }, { path: "/extras", label: t("nav.extras"), icon: GitBranchPlus, permission: "extras.read" }, { path: "/models", label: t("nav.models"), icon: ScissorsLineDashed, permission: "models.read" }, { path: "/tailors", label: t("nav.tailors"), icon: Scissors, permission: "tailors.read" }, { path: "/couriers", label: t("nav.couriers"), icon: Truck, permission: "couriers.read" }, { path: "/customers", label: t("nav.customers"), icon: Users, permission: "customers.read" }, { path: "/login-requests", label: t("nav.loginRequests"), icon: KeyRound, permission: "login_requests.read" }, { path: "/payout-requests", label: t("nav.payoutRequests"), icon: HandCoins, permission: "payouts.read" }, { path: "/orders", label: t("nav.orders"), icon: ClipboardList, permission: "orders.read" }, { path: "/staff", label: "Staff", icon: Users, permission: "staff.read" }, { path: "/roles", label: "Roles", icon: Users, permission: "roles.read" },
+].filter((item) => can(item.permission)));
 
 const handleLogout = () => {
-  keycloak.logout();
+  logout();
 };
 </script>

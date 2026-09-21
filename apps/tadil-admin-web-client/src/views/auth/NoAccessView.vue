@@ -1,0 +1,1 @@
+<template><section class="p-10"><h1 class="text-3xl font-semibold">No access</h1><p class="mt-2 text-muted-foreground">Your account has no enabled permissions. Contact an administrator.</p></section></template>
