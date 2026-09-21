@@ -14,7 +14,7 @@ export const login = async (email: string, password: string) => {
 };
 export const refreshAuth = async () => {
   try { const { data } = await http.get("/api/auth/me"); authState.user = data; authState.csrfToken = data.csrfToken || authState.csrfToken; return data; }
-  catch { authState.user = null; return null; }
+  catch (error: any) { if (error.response?.status === 401) clearAuth(); return authState.user; }
 };
 export const hydrateAuth = async () => { authState.loading = true; await refreshAuth(); authState.hydrated = true; authState.loading = false; };
 export const logout = async () => { try { await http.post("/api/auth/logout", undefined, { headers: { "X-CSRF-Token": authState.csrfToken || "" } }); } finally { clearAuth(); window.location.assign("/login"); } };
@@ -23,4 +23,16 @@ export const authHttp = http;
 http.interceptors.request.use((config) => {
   if (!["get", "head", "options"].includes((config.method || "get").toLowerCase()) && authState.csrfToken) config.headers["X-CSRF-Token"] = authState.csrfToken;
   return config;
+});
+http.interceptors.response.use(undefined, async (error) => {
+  const request = error.config;
+  const status = error.response?.status;
+  if (status === 401 && !request?._authRetry) {
+    clearAuth();
+    if (!window.location.pathname.startsWith("/login")) window.location.assign(`/login?returnUrl=${encodeURIComponent(window.location.pathname)}`);
+  } else if (status === 403 && !request?._authRetry && !request?.url?.endsWith("/auth/me")) {
+    request._authRetry = true;
+    await refreshAuth();
+  }
+  return Promise.reject(error);
 });

@@ -17,15 +17,17 @@ const routes: RouteRecordRaw[] = [
   { path: "/accept-invitation", component: () => import("@/views/auth/SetPasswordView.vue"), meta: { guest: true } },
   { path: "/forbidden", component: () => import("@/views/auth/ForbiddenView.vue") },
   { path: "/no-access", component: () => import("@/views/auth/NoAccessView.vue") },
+  { path: "/:pathMatch(.*)*", component: () => import("@/views/auth/NotFoundView.vue") },
   {
-    path: "/", component: () => import("@/layout/Layout.vue"), redirect: () => pages.find(([, permission]) => !permission || can(permission))?.[0] ? `/${pages.find(([, permission]) => !permission || can(permission))?.[0]}` : "/no-access",
+    path: "/", component: () => import("@/layout/Layout.vue"), redirect: () => pages.find(([, permission]) => !!permission && can(permission))?.[0] ? `/${pages.find(([, permission]) => !!permission && can(permission))?.[0]}` : "/no-access",
     children: [
       ...pages.map(([path, permission, component]) => ({ path, component, meta: permission ? { permission } : {} })),
     ],
   },
 ];
 const router = createRouter({ history: createWebHistory(), routes });
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
+  if (authState.user && !to.meta.guest) await (await import("@/auth")).refreshAuth();
   if (to.meta.guest) { if (authState.user && to.path === "/login") return "/"; return true; }
   if (!authState.user) return { path: "/login", query: { returnUrl: to.fullPath } };
   if (to.meta.permission && !can(to.meta.permission as string)) return "/forbidden";
